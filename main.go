@@ -1,43 +1,14 @@
 package main
 
-import (
-	"log"
-	"os"
-
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/pcap"
-)
+import "log"
 
 func main() {
 	log.Print("init gogrok")
 
-	handle, err := pcap.OpenLive("en0", 1500, false, -1)
+	sess, err := NewSession()
 	if err != nil {
-		log.Fatalf("error opening handle: %s", err)
+		log.Fatalf("unable to open capture session: %s", err)
 	}
 
-	err = handle.SetBPFFilter("tcp src port 80")
-	if err != nil {
-		log.Fatalf("error setting filter: %s", err)
-	}
-
-	f, err := os.Create("out.txt")
-	if err != nil {
-		log.Fatalf("error creating file for packet dump: %s", err)
-	}
-
-	src := gopacket.NewPacketSource(handle, handle.LinkType())
-	for p := range src.Packets() {
-		log.Printf("recv packet: %v", len(p.Data()))
-
-		httpData := p.ApplicationLayer()
-		if httpData == nil {
-			continue
-		}
-
-		_, err := f.Write(httpData.Payload())
-		if err != nil {
-			log.Fatalf("error writing to output file: %s", err)
-		}
-	}
+	log.Fatalf("error recording: %s\n", sess.Record())
 }
