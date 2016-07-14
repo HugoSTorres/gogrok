@@ -30,7 +30,12 @@ func main() {
 	for p := range src.Packets() {
 		log.Printf("recv packet: %v", len(p.Data()))
 
-		_, err := f.Write(p.Data())
+		httpData := p.ApplicationLayer()
+		if httpData == nil {
+			continue
+		}
+
+		_, err := f.Write(httpData.Payload())
 		if err != nil {
 			log.Fatalf("error writing to output file: %s", err)
 		}
