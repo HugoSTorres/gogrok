@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
@@ -44,17 +43,10 @@ func NewSession() (sess *Session, err error) {
 }
 
 // Record opens up a gopacket packet source and iterates through the packets as they come in.
-func (s *Session) Record() error {
+func (s *Session) Record(ch chan Message) error {
 	log.Println("gogrok.*Session.Record - begin recording")
 
 	src := gopacket.NewPacketSource(s.handle, s.handle.LinkType())
-
-	log.Println("gogrok.*Session.Record - creating output file")
-
-	f, err := os.Create("out.txt")
-	if err != nil {
-		return err
-	}
 
 	for p := range src.Packets() {
 		httpData := p.ApplicationLayer()
@@ -62,10 +54,10 @@ func (s *Session) Record() error {
 			continue
 		}
 
-		_, err := f.Write(httpData.Payload())
-		if err != nil {
-			return err
-		}
+		s.Data = append(s.Data, httpData.Payload())
+
+		log.Println("gogrok.*Session.Record - writing data to channel")
+		ch <- Message(httpData.Payload())
 	}
 
 	return nil
