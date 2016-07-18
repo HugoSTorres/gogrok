@@ -22,6 +22,8 @@ func main() {
 	exit := make(chan struct{})
 	signal.Notify(sig, os.Interrupt)
 
+	log.Println("to quit gogrok, just press CTRL-C")
+
 	go func() {
 		for {
 			select {
