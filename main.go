@@ -33,10 +33,11 @@ func main() {
 		}
 	}()
 
+	// Let's give the sniffer three tries to start up, just in case something rare
+	// and intermittent happens.
 	go func() {
-		err = sess.Record(ch)
-		if err != nil {
-			log.Fatalf("error recording: %s\n", err)
+		for i := 0; i < 3; i++ {
+			log.Fatalf("error recording: %s\n", sess.Record(ch))
 		}
 	}()
 
