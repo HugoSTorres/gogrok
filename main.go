@@ -40,13 +40,7 @@ func main() {
 		}
 	}()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("requesting capture data")
-
-		m := <-ch
-		w.Write([]byte(m))
-		return
-	})
+	http.HandleFunc("/", genStreamHandler(ch))
 
 	// Let's give the server three tries to start up, just in case something rare
 	// and intermittent happens.
@@ -63,4 +57,14 @@ func main() {
 	close(exit)
 	close(sig)
 	close(ch)
+}
+
+func genStreamHandler(ch <-chan Message) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("streamHandler - requesting capture data")
+
+		m := <-ch
+		w.Write([]byte(m))
+		return
+	}
 }
