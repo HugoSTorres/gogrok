@@ -29,6 +29,6 @@
   },
   "homepage": "https://github.com/HugoSTorres/gogrok#readme",
   "devDependencies": {
-    "electron-prebuilt": "^1.2.7"
+    "electron-prebuilt": "^1.2.8"
   }
 }

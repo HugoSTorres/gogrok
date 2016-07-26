@@ -13,3 +13,17 @@ Sometimes, you don't have a web browser's inspector to show you your outgoing an
 HTTP requests. Gogrok should show them to you. Also, I noticed one day that large chunked
 HTTP requests make the ngrok inspector's browser tab crash. It would be great to see the
 chunked request as it comes in. Gogrok should do this.
+
+## Setup instructions
+
+1. Clone the repo
+1. `npm install`
+1. `npm install grpc`
+1. Open `node_modules/grpc/binding.gyp` and add the following to the `conditions` section of `target_defaults`:
+```
+['OS == "mac"', {
+'libraries': [
+    "/usr/local/opt/openssl/lib/libcrypto.a"
+],
+}]
+```

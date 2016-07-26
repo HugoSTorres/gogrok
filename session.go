@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/HugoSTorres/gogrok/pb"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 )
@@ -60,5 +61,10 @@ func (s *Session) Record(ch chan Message) error {
 		ch <- Message(httpData.Payload())
 	}
 
+	return nil
+}
+
+func (s *Session) Connect(args *pb.SnifferParams, conn pb.Sniffer_ConnectServer) error {
+	conn.Send(&pb.Message{Data: "FUCK IT"})
 	return nil
 }
