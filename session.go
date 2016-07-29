@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
@@ -23,17 +24,17 @@ type Message []byte
 
 // NewSession creates a capture session using pcap and returns it. If an error
 // occurs creating the session, it is returned.
-func NewSession() (sess *Session, err error) {
+func NewSession(dev, srcAddr, destAddr string, srcPort, destPort int) (sess *Session, err error) {
 	log.Println("gogrok.NewSession - initializing capture session")
 
-	handle, err := pcap.OpenLive("en0", 1500, false, -1)
+	handle, err := pcap.OpenLive(dev, 1500, false, -1)
 	if err != nil {
 		return
 	}
 
 	log.Println("gogrok.NewSession - setting filter for HTTP requests")
 
-	err = handle.SetBPFFilter("tcp src port 80")
+	err = handle.SetBPFFilter(getBPF(srcAddr, destAddr, srcPort, destPort))
 	if err != nil {
 		return
 	}
@@ -61,4 +62,30 @@ func (s *Session) Record(ch chan Message) error {
 	}
 
 	return nil
+}
+
+func getBPF(srcAddr, destAddr string, srcPort, destPort int) string {
+	var filter string
+
+	if len(srcAddr) > 0 {
+		filter += "src host " + srcAddr
+	}
+
+	if len(filter) != 0 {
+		filter += " and src "
+	}
+
+	filter += "port " + strconv.Itoa(srcPort)
+
+	if len(destAddr) > 0 {
+		filter += "dest host " + destAddr
+	}
+
+	if destPort > 0 {
+		filter += "dest port " + strconv.Itoa(destPort)
+	}
+
+	log.Printf("getBPF - filter: %s\n", filter)
+
+	return filter
 }

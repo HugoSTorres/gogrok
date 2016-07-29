@@ -1,20 +1,39 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
 )
 
-const (
-	port = ":50051"
-)
+const use = "usage: gogrok [--src_addr=<ip>] [--src_port=<port>] [--dest_addr=<ip>] [--dest_port=<port>]"
+
+func init() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, use)
+		flag.PrintDefaults()
+	}
+}
 
 func main() {
-	log.Print("init gogrok")
+	var dev, srcAddr, destAddr string
+	var srcPort, destPort int
+	flag.StringVar(&dev, "device", "", "the device to listen on")
+	flag.StringVar(&srcAddr, "src_addr", "", "the client's ip address (without port)")
+	flag.StringVar(&destAddr, "dest_addr", "", "the server's ip address (without port)")
+	flag.IntVar(&srcPort, "src_port", 80, "the client's port")
+	flag.IntVar(&destPort, "dest_port", -1, "the server's port")
 
-	sess, err := NewSession()
+	flag.Parse()
+
+	if len(dev) < 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	sess, err := NewSession(dev, srcAddr, destAddr, srcPort, destPort)
 	if err != nil {
 		log.Fatalf("unable to open capture session: %s", err)
 	}
