@@ -22,7 +22,7 @@ type Message []byte
 // NewSession creates a capture session using pcap and returns it. If an error
 // occurs creating the session, it is returned.
 func NewSession(dev, filter string) (sess *Session, err error) {
-	handle, err := pcap.OpenLive(dev, 1500, false, -1)
+	handle, err := pcap.OpenLive(dev, 1500, true, -1)
 	if err != nil {
 		return
 	}
