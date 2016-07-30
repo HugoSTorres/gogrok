@@ -54,7 +54,7 @@ func main() {
 		for {
 			select {
 			case <-sig:
-				fmt.Println("gogrok: shutting down")
+				fmt.Println("\ngogrok: shutting down")
 				exit <- struct{}{}
 			}
 		}
@@ -79,8 +79,4 @@ func main() {
 	}()
 
 	<-exit
-
-	close(exit)
-	close(sig)
-	close(ch)
 }
