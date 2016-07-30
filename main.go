@@ -6,9 +6,10 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 )
 
-const use = "usage: gogrok [--src_addr=<ip>] [--src_port=<port>] [--dest_addr=<ip>] [--dest_port=<port>]"
+const use = "usage: gogrok --interface <device> <filter>\n\n"
 
 func init() {
 	flag.Usage = func() {
@@ -18,22 +19,22 @@ func init() {
 }
 
 func main() {
-	var dev, srcAddr, destAddr string
-	var srcPort, destPort int
-	flag.StringVar(&dev, "device", "", "the device to listen on")
-	flag.StringVar(&srcAddr, "src_addr", "", "the client's ip address (without port)")
-	flag.StringVar(&destAddr, "dest_addr", "", "the server's ip address (without port)")
-	flag.IntVar(&srcPort, "src_port", 80, "the client's port")
-	flag.IntVar(&destPort, "dest_port", -1, "the server's port")
+	var dev string
+	flag.StringVar(&dev, "i", "", "the device to listen on")
 
 	flag.Parse()
 
-	if len(dev) < 1 {
+	if len(dev) == 0 {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	sess, err := NewSession(dev, srcAddr, destAddr, srcPort, destPort)
+	filter := "port 80"
+	if len(flag.Args()) != 0 {
+		filter = strings.Join(flag.Args(), " ")
+	}
+
+	sess, err := NewSession(dev, filter)
 	if err != nil {
 		log.Fatalf("unable to open capture session: %s", err)
 	}
