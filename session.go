@@ -1,8 +1,6 @@
 package main
 
 import (
-	"log"
-
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 )
@@ -24,14 +22,10 @@ type Message []byte
 // NewSession creates a capture session using pcap and returns it. If an error
 // occurs creating the session, it is returned.
 func NewSession(dev, filter string) (sess *Session, err error) {
-	log.Println("gogrok.NewSession - initializing capture session")
-
 	handle, err := pcap.OpenLive(dev, 1500, false, -1)
 	if err != nil {
 		return
 	}
-
-	log.Printf("gogrok.NewSession - filter: %v", filter)
 
 	err = handle.SetBPFFilter(filter)
 	if err != nil {
@@ -44,8 +38,6 @@ func NewSession(dev, filter string) (sess *Session, err error) {
 
 // Record opens up a gopacket packet source and iterates through the packets as they come in.
 func (s *Session) Record(ch chan Message) error {
-	log.Println("gogrok.*Session.Record - begin recording")
-
 	src := gopacket.NewPacketSource(s.handle, s.handle.LinkType())
 
 	for p := range src.Packets() {
@@ -56,7 +48,6 @@ func (s *Session) Record(ch chan Message) error {
 
 		s.Data = append(s.Data, httpData.Payload())
 
-		log.Println("gogrok.*Session.Record - writing data to channel")
 		ch <- Message(httpData.Payload())
 	}
 

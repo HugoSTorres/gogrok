@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -36,8 +35,11 @@ func main() {
 
 	sess, err := NewSession(dev, filter)
 	if err != nil {
-		log.Fatalf("unable to open capture session: %s", err)
+		fmt.Fprintf(os.Stderr, "unable to open capture session: %s\n", err)
+		os.Exit(1)
 	}
+
+	fmt.Printf("gogrok: listening on %s for %s\n", dev, filter)
 
 	ch := make(chan Message)
 
@@ -46,12 +48,13 @@ func main() {
 	exit := make(chan struct{})
 	signal.Notify(sig, os.Interrupt)
 
-	log.Println("to quit gogrok, just press CTRL-C")
+	fmt.Println("gogrok: CTRL-C to quit")
 
 	go func() {
 		for {
 			select {
 			case <-sig:
+				fmt.Println("gogrok: shutting down")
 				exit <- struct{}{}
 			}
 		}
@@ -60,9 +63,12 @@ func main() {
 	// Let's give the sniffer three tries to start up, just in case something rare
 	// and intermittent happens.
 	go func() {
-		for i := 0; i < 3; i++ {
-			log.Fatalf("error recording: %s\n", sess.Record(ch))
+		for i := 0; i < 2; i++ {
+			fmt.Printf("error recording: %v\n", sess.Record(ch))
+			fmt.Println("retrying...")
 		}
+
+		fmt.Fprintf(os.Stderr, "error recording: %s\n", sess.Record(ch))
 	}()
 
 	go func() {
@@ -73,8 +79,6 @@ func main() {
 	}()
 
 	<-exit
-
-	log.Println("shutting down")
 
 	close(exit)
 	close(sig)
